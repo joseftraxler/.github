@@ -35,14 +35,6 @@ jobs:
                     sparse-checkout: .release
                     sparse-checkout-cone-mode: 'true'
 
-            -   name: Cache release npm packages
-                uses: actions/cache@v5
-                with:
-                    path: |
-                        .release/node_modules
-                        ~/.npm
-                    key: npm-release-${{ hashFiles('release/package-lock.json') }}
-
             -   name: Prepare release files
                 run: |
                     if [ ! -d .release ]; then
@@ -50,6 +42,14 @@ jobs:
                         cp -Rn release/.release/. .release/
                     fi
                     ls .release -la
+
+            -   name: Cache release npm packages
+                uses: actions/cache@v5
+                with:
+                    path: |
+                        .release/node_modules
+                        ~/.npm
+                    key: npm-release-${{ hashFiles('.release/package-lock.json') }}
 
             -   name: Setup Node.js
                 uses: actions/setup-node@v6
