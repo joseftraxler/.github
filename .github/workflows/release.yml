@@ -12,10 +12,10 @@ jobs:
         if: >
             !contains(github.event.head_commit.message, '[skip ci]')
             && (
-                input.target == 'main'
+                inputs.target == 'main'
                 || (
-                    startsWith(input.target, 'v')
-                    && contains(input.target, '.x')
+                    startsWith(inputs.target, 'v')
+                    && contains(inputs.target, '.x')
                 )
             )
         runs-on: ubuntu-latest
