@@ -1,0 +1,49 @@
+name: Check PHP
+
+on:
+    workflow_call:
+        inputs:
+            php:
+                default: '8.5'
+                type: string
+
+jobs:
+    check-code:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v6
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ inputs.php }}
+                    coverage: none
+
+            -   name: Cache vendor
+                uses: actions/cache@v5
+                with:
+                    path: vendor
+                    key: vendor-${{ hashFiles('composer.lock') }}
+
+            -   name: Install composer
+                run: |
+                    composer config allow-plugins.pestphp/pest-plugin false
+                    composer install \
+                      --prefer-dist \
+                      --no-interaction \
+                      --no-progress \
+                      --no-scripts \
+                      --optimize-autoloader \
+                      --classmap-authoritative
+
+            -   name: Check PHP Code style
+                run: vendor/bin/php-cs-fixer check
+
+            -   name: Check static analysis
+                run: |
+                    if [[ -f "phpstan.neon" ]]; then
+                        vendor/bin/phpstan analyse -c phpstan.neon
+                    else
+                        vendor/bin/phpstan analyse src test -l max
+                    fi

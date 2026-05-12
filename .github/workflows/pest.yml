@@ -1,0 +1,41 @@
+name: Pest tests
+
+on:
+    workflow_call:
+        inputs:
+            php:
+                default: '8.5'
+                type: string
+
+jobs:
+    tests:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v6
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ inputs.php }}
+                    coverage: xdebug
+
+            -   name: Cache vendor
+                uses: actions/cache@v5
+                with:
+                    path: vendor
+                    key: vendor-${{ hashFiles('composer.lock') }}
+
+            -   name: Install composer
+                run: |
+                    composer config allow-plugins.pestphp/pest-plugin false
+                    composer install \
+                      --prefer-dist \
+                      --no-interaction \
+                      --no-progress \
+                      --no-scripts \
+                      --optimize-autoloader \
+                      --classmap-authoritative
+
+            -   name: Run tests
+                run: ./vendor/bin/pest

@@ -1,0 +1,67 @@
+name: Release
+
+on:
+    workflow_call:
+        inputs:
+            target:
+                type: string
+                required: true
+
+jobs:
+    release:
+        if: >
+            !contains(github.event.head_commit.message, '[skip ci]')
+            && (
+                input.target == 'main'
+                || (
+                    startsWith(input.target, 'v')
+                    && contains(input.target, '.x')
+                )
+            )
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v6
+                with:
+                    fetch-depth: 0
+
+            -   name: Checkout shared release files
+                uses: actions/checkout@v6
+                with:
+                    repository: joseftraxler/.github
+                    ref: main
+                    path: release
+                    sparse-checkout: release
+                    sparse-checkout-cone-mode: 'true'
+
+            -   name: Cache release npm packages
+                uses: actions/cache@v5
+                with:
+                    path: |
+                        .release/node_modules
+                        ~/.npm
+                    key: npm-release-${{ hashFiles('release/package-lock.json') }}
+
+            -   name: Prepare release files
+                run: |
+                    if [ ! -d .release ]; then
+                        mkdir -p .release
+                        cp -Rn shared-release/release/. .release/
+                    fi
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v6
+                with:
+                    node-version: '24'
+
+            -   name: Install release packages
+                working-directory: .release
+                run: npm install --no-fund --prefer-offline --no-progress
+
+            -   name: Run semantic-release
+                working-directory: .release
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run: npx semantic-release
+
