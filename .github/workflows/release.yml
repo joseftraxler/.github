@@ -49,6 +49,7 @@ jobs:
                         mkdir -p .release
                         cp -Rn release/.release/. .release/
                     fi
+                    ls .release -la
 
             -   name: Setup Node.js
                 uses: actions/setup-node@v6
