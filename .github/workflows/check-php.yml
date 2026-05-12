@@ -45,5 +45,5 @@ jobs:
                     if [[ -f "phpstan.neon" ]]; then
                         vendor/bin/phpstan analyse -c phpstan.neon
                     else
-                        vendor/bin/phpstan analyse src test -l max
+                        vendor/bin/phpstan analyse src tests -l max
                     fi
