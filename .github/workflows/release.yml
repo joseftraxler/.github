@@ -32,7 +32,7 @@ jobs:
                     repository: joseftraxler/.github
                     ref: main
                     path: release
-                    sparse-checkout: release
+                    sparse-checkout: .release
                     sparse-checkout-cone-mode: 'true'
 
             -   name: Cache release npm packages
@@ -47,7 +47,7 @@ jobs:
                 run: |
                     if [ ! -d .release ]; then
                         mkdir -p .release
-                        cp -Rn release/release/. .release/
+                        cp -Rn release/.release/. .release/
                     fi
 
             -   name: Setup Node.js
